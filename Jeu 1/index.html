@@ -12,7 +12,7 @@
       <div>
         <p class="eyebrow">Épreuve visuelle</p>
         <h1>Jaquettes pixelisées</h1>
-        <p class="subtitle">Chaque jaquette est d'abord floutée puis se révèle progressivement. Clique pour passer à une nouvelle jaquette.</p>
+        <p class="subtitle">Chaque jaquette est d'abord pixelisée puis se révèle progressivement. Clique pour passer à une nouvelle jaquette.</p>
       </div>
       <a class="back" href="../index.html">← Retour à l'accueil</a>
     </header>
@@ -68,7 +68,7 @@
       coverImage.classList.remove("depixel");
       coverImage.classList.add("pixel");
 
-      // Ensure the browser registers the reset before removing the blur
+      // Ensure the browser registers the reset before revealing the pixels
       requestAnimationFrame(() => {
         setTimeout(() => coverImage.classList.add("depixel"), 50);
       });

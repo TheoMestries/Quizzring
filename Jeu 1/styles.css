@@ -136,11 +136,8 @@ section.board {
   height: 100%;
   object-fit: cover;
   border-radius: 14px;
-  transition: transform 0.3s ease;
-}
-
-.cover.depixel {
-  transform: scale(1.01);
+  --pixel-scale: 1;
+  transform-origin: center;
 }
 
 .hint {
@@ -156,11 +153,17 @@ code {
 }
 
 .pixel {
-  filter: blur(28px);
+  --pixel-scale: 14;
+  width: calc(100% / var(--pixel-scale));
+  height: calc(100% / var(--pixel-scale));
   image-rendering: pixelated;
-  transition: filter 10s ease-out;
+  transform: scale(var(--pixel-scale));
+  transition: width 10s steps(18, end), height 10s steps(18, end), transform 10s steps(18, end);
 }
 
 .pixel.depixel {
-  filter: blur(0px);
+  --pixel-scale: 1;
+  width: 100%;
+  height: 100%;
+  transform: scale(1.01);
 }

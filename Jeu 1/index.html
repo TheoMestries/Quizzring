@@ -27,10 +27,17 @@
       </div>
 
       <div class="cover-frame">
-        <img id="cover-image" class="cover pixel" src="" alt="Jaquette mystère" loading="lazy">
+        <canvas id="cover-canvas" class="cover" aria-label="Jaquette mystère"></canvas>
       </div>
 
-      <p class="hint">Astuce : tu peux déclencher la dépixelisation sur chaque jaquette grâce aux classes <code>.pixel</code> et <code>.depixel</code>.</p>
+      <div class="pixel-controls" aria-label="Réglages de pixelisation">
+        <label for="pixel-size">Taille des pixels :</label>
+        <input type="range" id="pixel-size" min="2" max="60" value="28">
+        <span id="pixel-value">28</span> px
+        <button id="reveal" class="ghost">Relancer la révélation</button>
+      </div>
+
+      <p class="hint">Astuce : le curseur contrôle instantanément la pixelisation. Le bouton relance l'animation de dépixelisation pour la jaquette affichée.</p>
     </section>
   </main>
 
@@ -58,33 +65,82 @@
       "Image/FinalFantasy7.jpg"
     ];
 
-    const coverImage = document.getElementById("cover-image");
+    const coverCanvas = document.getElementById("cover-canvas");
+    const canvasCtx = coverCanvas.getContext("2d");
+    const pixelSlider = document.getElementById("pixel-size");
+    const pixelValue = document.getElementById("pixel-value");
     const nextButton = document.getElementById("next-cover");
+    const revealButton = document.getElementById("reveal");
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
 
     let currentIndex = 0;
+    let revealInterval = null;
 
-    function revealWithDepixel() {
-      // Re-apply the pixelation before triggering the reveal
-      coverImage.classList.remove("depixel");
-      coverImage.classList.add("pixel");
+    function drawPixelated(pixelSize) {
+      if (!img.complete || !img.naturalWidth || !img.naturalHeight) return;
 
-      // Force a reflow so the depixelisation animation restarts every time
-      // a new image finishes loading.
-      void coverImage.offsetWidth;
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
 
-      // Ensure the browser registers the reset before revealing the pixels
-      requestAnimationFrame(() => {
-        setTimeout(() => coverImage.classList.add("depixel"), 50);
-      });
+      coverCanvas.width = w;
+      coverCanvas.height = h;
+
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+
+      const smallW = Math.max(1, Math.floor(w / pixelSize));
+      const smallH = Math.max(1, Math.floor(h / pixelSize));
+
+      tempCanvas.width = smallW;
+      tempCanvas.height = smallH;
+
+      tempCtx.imageSmoothingEnabled = false;
+      canvasCtx.imageSmoothingEnabled = false;
+
+      tempCtx.drawImage(img, 0, 0, smallW, smallH);
+
+      canvasCtx.clearRect(0, 0, w, h);
+      canvasCtx.drawImage(tempCanvas, 0, 0, smallW, smallH, 0, 0, w, h);
+    }
+
+    function updatePixelSize(newSize) {
+      pixelValue.textContent = newSize;
+      drawPixelated(newSize);
+    }
+
+    function startRevealAnimation() {
+      if (revealInterval) {
+        clearInterval(revealInterval);
+      }
+
+      let size = Math.max(parseInt(pixelSlider.value, 10), 2);
+      updatePixelSize(size);
+
+      revealInterval = setInterval(() => {
+        size = Math.max(2, size - 2);
+        pixelSlider.value = size;
+        updatePixelSize(size);
+
+        if (size <= 2) {
+          clearInterval(revealInterval);
+          revealInterval = null;
+        }
+      }, 220);
     }
 
     function showCover() {
       if (currentIndex >= covers.length) return;
       const newCover = covers[currentIndex];
-      coverImage.classList.remove("depixel");
-      coverImage.classList.add("pixel");
-      coverImage.src = newCover;
+      nextButton.disabled = false;
+      nextButton.textContent = "Nouvelle jaquette";
+      nextButton.classList.remove("primary-disabled");
 
+      pixelSlider.value = 28;
+      updatePixelSize(28);
+
+      img.src = newCover;
       currentIndex += 1;
 
       if (currentIndex >= covers.length) {
@@ -94,10 +150,14 @@
       }
     }
 
-    coverImage.addEventListener("load", revealWithDepixel);
+    img.addEventListener("load", startRevealAnimation);
+    pixelSlider.addEventListener("input", (event) => {
+      const value = parseInt(event.target.value, 10);
+      updatePixelSize(value);
+    });
     nextButton.addEventListener("click", showCover);
+    revealButton.addEventListener("click", startRevealAnimation);
 
-    // Première jaquette au chargement de la page
     showCover();
   </script>
 </body>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quizzring | Épreuve jaquettes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Épreuve visuelle</p>
+        <h1>Jaquettes pixelisées</h1>
+        <p class="subtitle">Chaque jaquette est d'abord floutée puis se révèle progressivement. Clique pour passer à une nouvelle jaquette.</p>
+      </div>
+      <a class="back" href="../index.html">← Retour à l'accueil</a>
+    </header>
+
+    <section class="board" aria-labelledby="cover-title">
+      <div class="board-header">
+        <div>
+          <p class="eyebrow">Aperçu</p>
+          <h2 id="cover-title">Jaquette en cours</h2>
+        </div>
+        <button id="next-cover" class="primary">Nouvelle jaquette</button>
+      </div>
+
+      <div class="cover-frame">
+        <img id="cover-image" class="cover pixel" src="" alt="Jaquette mystère" loading="lazy">
+      </div>
+
+      <p class="hint">Astuce : tu peux déclencher la dépixelisation sur chaque jaquette grâce aux classes <code>.pixel</code> et <code>.depixel</code>.</p>
+    </section>
+  </main>
+
+  <script>
+    const covers = [
+      "Image/Apex.jpg",
+      "Image/Ark.jpg",
+      "Image/Celeste.jpg",
+      "Image/DBD.jpg",
+      "Image/FinalFantasy7.jpg",
+      "Image/Fortnite.jpg",
+      "Image/GTAV.jpg",
+      "Image/Halo.jpg",
+      "Image/HollowKnight.jpg",
+      "Image/Horizon.jpg",
+      "Image/LoL.jpg",
+      "Image/Mario_Odyssey.jpg",
+      "Image/Minecraft.jpg",
+      "Image/Overwatch.jpg",
+      "Image/RDR2.jpg",
+      "Image/ResidentEvil.jpg",
+      "Image/RocketLeague.jpg",
+      "Image/StardewValley.jpg",
+      "Image/TLOU.jpg",
+      "Image/clair-obscure.jpg"
+    ];
+
+    const coverImage = document.getElementById("cover-image");
+    const nextButton = document.getElementById("next-cover");
+
+    function pickRandomCover() {
+      const index = Math.floor(Math.random() * covers.length);
+      return covers[index];
+    }
+
+    function revealWithDepixel() {
+      // Re-apply the pixelation before triggering the reveal
+      coverImage.classList.remove("depixel");
+      coverImage.classList.add("pixel");
+
+      // Ensure the browser registers the reset before removing the blur
+      requestAnimationFrame(() => {
+        setTimeout(() => coverImage.classList.add("depixel"), 50);
+      });
+    }
+
+    function showCover() {
+      const newCover = pickRandomCover();
+      coverImage.classList.remove("depixel");
+      coverImage.classList.add("pixel");
+      coverImage.src = newCover;
+    }
+
+    coverImage.addEventListener("load", revealWithDepixel);
+    nextButton.addEventListener("click", showCover);
+
+    // Première jaquette au chargement de la page
+    showCover();
+  </script>
+</body>
+</html>

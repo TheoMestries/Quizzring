@@ -78,6 +78,8 @@ section {
   text-align: center;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.01);
+  text-decoration: none;
+  display: block;
 }
 
 .slot:hover {

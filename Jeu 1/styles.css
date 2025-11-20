@@ -134,16 +134,49 @@ section.board {
 .cover {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: 14px;
-  --pixel-scale: 1;
-  transform-origin: center;
-  image-rendering: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.pixel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.pixel-controls label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pixel-controls input[type="range"] {
+  accent-color: var(--accent);
+  width: 220px;
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(125, 211, 252, 0.08);
 }
 
 .hint {
   color: var(--muted);
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   line-height: 1.5;
 }
 
@@ -151,27 +184,4 @@ code {
   background: rgba(255, 255, 255, 0.08);
   padding: 2px 5px;
   border-radius: 6px;
-}
-
-.pixel {
-  --pixel-scale: 18;
-  width: calc(100% / var(--pixel-scale));
-  height: calc(100% / var(--pixel-scale));
-  image-rendering: pixelated;
-  transform: scale(var(--pixel-scale));
-  filter: contrast(1.05) saturate(1.05);
-  transition:
-    width 8s steps(16, end),
-    height 8s steps(16, end),
-    transform 8s steps(16, end),
-    filter 2s ease-out;
-}
-
-.pixel.depixel {
-  --pixel-scale: 1;
-  width: 100%;
-  height: 100%;
-  image-rendering: auto;
-  filter: none;
-  transform: scale(1.01);
 }

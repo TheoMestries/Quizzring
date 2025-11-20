@@ -149,9 +149,9 @@ code {
 }
 
 .pixel {
-  filter: blur(12px);
+  filter: blur(20px);
   image-rendering: pixelated;
-  transition: filter 3s ease-out;
+  transition: filter 10s ease-out;
 }
 
 .pixel.depixel {

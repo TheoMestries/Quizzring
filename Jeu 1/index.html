@@ -61,9 +61,12 @@
     const coverImage = document.getElementById("cover-image");
     const nextButton = document.getElementById("next-cover");
 
-    function pickRandomCover() {
-      const index = Math.floor(Math.random() * covers.length);
-      return covers[index];
+    let currentIndex = 0;
+
+    function getNextCover() {
+      const cover = covers[currentIndex];
+      currentIndex = (currentIndex + 1) % covers.length;
+      return cover;
     }
 
     function revealWithDepixel() {
@@ -78,7 +81,7 @@
     }
 
     function showCover() {
-      const newCover = pickRandomCover();
+      const newCover = getNextCover();
       coverImage.classList.remove("depixel");
       coverImage.classList.add("pixel");
       coverImage.src = newCover;

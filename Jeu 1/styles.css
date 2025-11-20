@@ -138,6 +138,7 @@ section.board {
   border-radius: 14px;
   --pixel-scale: 1;
   transform-origin: center;
+  image-rendering: auto;
 }
 
 .hint {
@@ -153,17 +154,24 @@ code {
 }
 
 .pixel {
-  --pixel-scale: 14;
+  --pixel-scale: 18;
   width: calc(100% / var(--pixel-scale));
   height: calc(100% / var(--pixel-scale));
   image-rendering: pixelated;
   transform: scale(var(--pixel-scale));
-  transition: width 10s steps(18, end), height 10s steps(18, end), transform 10s steps(18, end);
+  filter: contrast(1.05) saturate(1.05);
+  transition:
+    width 8s steps(16, end),
+    height 8s steps(16, end),
+    transform 8s steps(16, end),
+    filter 2s ease-out;
 }
 
 .pixel.depixel {
   --pixel-scale: 1;
   width: 100%;
   height: 100%;
+  image-rendering: auto;
+  filter: none;
   transform: scale(1.01);
 }

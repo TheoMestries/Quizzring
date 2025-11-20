@@ -68,6 +68,10 @@
       coverImage.classList.remove("depixel");
       coverImage.classList.add("pixel");
 
+      // Force a reflow so the depixelisation animation restarts every time
+      // a new image finishes loading.
+      void coverImage.offsetWidth;
+
       // Ensure the browser registers the reset before revealing the pixels
       requestAnimationFrame(() => {
         setTimeout(() => coverImage.classList.add("depixel"), 50);

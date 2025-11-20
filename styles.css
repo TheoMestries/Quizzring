@@ -1,0 +1,104 @@
+:root {
+  --bg: #0f1320;
+  --card: #161c2c;
+  --border: #252b3b;
+  --text: #e9ecf5;
+  --muted: #9aa3b8;
+  --accent: #7dd3fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 15% 20%, rgba(125, 211, 252, 0.08), transparent 25%),
+    radial-gradient(circle at 80% 0%, rgba(109, 40, 217, 0.1), transparent 25%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.header h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(28px, 3vw, 36px);
+}
+
+.header .subtitle {
+  color: var(--muted);
+  margin: 0;
+}
+
+.eyebrow {
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  margin: 0;
+}
+
+section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 18px;
+}
+
+.slots-heading h2 {
+  margin: 0 0 6px;
+}
+
+.slots-heading .hint {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.slot {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.slot:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.notes h2 {
+  margin-top: 0;
+}
+
+.notes ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 5px;
+  border-radius: 6px;
+}

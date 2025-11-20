@@ -32,12 +32,12 @@
 
       <div class="pixel-controls" aria-label="Réglages de pixelisation">
         <label for="pixel-size">Taille des pixels :</label>
-        <input type="range" id="pixel-size" min="2" max="60" value="28">
-        <span id="pixel-value">28</span> px
+        <input type="range" id="pixel-size" min="2" max="100" value="100">
+        <span id="pixel-value">100</span> px
         <button id="reveal" class="ghost">Relancer la révélation</button>
       </div>
 
-      <p class="hint">Astuce : le curseur contrôle instantanément la pixelisation. Le bouton relance l'animation de dépixelisation pour la jaquette affichée.</p>
+      <p class="hint">Astuce : le curseur contrôle instantanément la pixelisation. Le bouton relance l'animation de dépixelisation pour la jaquette affichée. Appuie sur la barre espace pour mettre en pause ou reprendre l'animation.</p>
     </section>
   </main>
 
@@ -75,8 +75,15 @@
     const img = new Image();
     img.crossOrigin = "anonymous";
 
+    const MIN_PIXEL_SIZE = 2;
+    const START_PIXEL_SIZE = 100;
+    const REVEAL_DURATION = 15000;
+
     let currentIndex = 0;
-    let revealInterval = null;
+    let animationFrame = null;
+    let revealStartTime = null;
+    let pausedElapsed = 0;
+    let isPaused = false;
 
     function drawPixelated(pixelSize) {
       if (!img.complete || !img.naturalWidth || !img.naturalHeight) return;
@@ -110,24 +117,53 @@
       drawPixelated(newSize);
     }
 
+    function stepReveal(now) {
+      if (isPaused) return;
+
+      const elapsed = Math.max(0, now - revealStartTime + pausedElapsed);
+      const progress = Math.min(elapsed / REVEAL_DURATION, 1);
+      const pixelSize = Math.round(
+        START_PIXEL_SIZE - (START_PIXEL_SIZE - MIN_PIXEL_SIZE) * progress
+      );
+
+      pixelSlider.value = pixelSize;
+      updatePixelSize(pixelSize);
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(stepReveal);
+      } else {
+        animationFrame = null;
+        pausedElapsed = 0;
+      }
+    }
+
     function startRevealAnimation() {
-      if (revealInterval) {
-        clearInterval(revealInterval);
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
       }
 
-      let size = Math.max(parseInt(pixelSlider.value, 10), 2);
-      updatePixelSize(size);
+      isPaused = false;
+      pausedElapsed = 0;
 
-      revealInterval = setInterval(() => {
-        size = Math.max(2, size - 2);
-        pixelSlider.value = size;
-        updatePixelSize(size);
+      pixelSlider.value = START_PIXEL_SIZE;
+      updatePixelSize(START_PIXEL_SIZE);
 
-        if (size <= 2) {
-          clearInterval(revealInterval);
-          revealInterval = null;
-        }
-      }, 220);
+      revealStartTime = performance.now();
+      animationFrame = requestAnimationFrame(stepReveal);
+    }
+
+    function togglePause() {
+      if (!animationFrame && !isPaused) return;
+
+      if (!isPaused) {
+        isPaused = true;
+        pausedElapsed += performance.now() - revealStartTime;
+        cancelAnimationFrame(animationFrame);
+      } else {
+        isPaused = false;
+        revealStartTime = performance.now();
+        animationFrame = requestAnimationFrame(stepReveal);
+      }
     }
 
     function showCover() {
@@ -137,8 +173,8 @@
       nextButton.textContent = "Nouvelle jaquette";
       nextButton.classList.remove("primary-disabled");
 
-      pixelSlider.value = 28;
-      updatePixelSize(28);
+      pixelSlider.value = START_PIXEL_SIZE;
+      updatePixelSize(START_PIXEL_SIZE);
 
       img.src = newCover;
       currentIndex += 1;
@@ -157,6 +193,13 @@
     });
     nextButton.addEventListener("click", showCover);
     revealButton.addEventListener("click", startRevealAnimation);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        togglePause();
+      }
+    });
 
     showCover();
   </script>

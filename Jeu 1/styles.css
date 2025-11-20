@@ -110,6 +110,13 @@ section.board {
   box-shadow: 0 12px 48px rgba(192, 132, 252, 0.25);
 }
 
+.primary:disabled,
+.primary.primary-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
 .cover-frame {
   margin: 24px auto 12px;
   width: min(480px, 90vw);
@@ -149,7 +156,7 @@ code {
 }
 
 .pixel {
-  filter: blur(20px);
+  filter: blur(28px);
   image-rendering: pixelated;
   transition: filter 10s ease-out;
 }

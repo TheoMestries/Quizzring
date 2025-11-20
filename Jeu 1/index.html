@@ -36,38 +36,32 @@
 
   <script>
     const covers = [
-      "Image/Apex.jpg",
       "Image/Ark.jpg",
-      "Image/Celeste.jpg",
-      "Image/DBD.jpg",
-      "Image/FinalFantasy7.jpg",
-      "Image/Fortnite.jpg",
-      "Image/GTAV.jpg",
-      "Image/Halo.jpg",
-      "Image/HollowKnight.jpg",
-      "Image/Horizon.jpg",
-      "Image/LoL.jpg",
-      "Image/Mario_Odyssey.jpg",
-      "Image/Minecraft.jpg",
-      "Image/Overwatch.jpg",
       "Image/RDR2.jpg",
-      "Image/ResidentEvil.jpg",
+      "Image/Halo.jpg",
+      "Image/Minecraft.jpg",
+      "Image/Fortnite.jpg",
+      "Image/Celeste.jpg",
       "Image/RocketLeague.jpg",
-      "Image/StardewValley.jpg",
+      "Image/Horizon.jpg",
+      "Image/Apex.jpg",
+      "Image/DBD.jpg",
+      "Image/clair-obscure.jpg",
+      "Image/Mario_Odyssey.jpg",
+      "Image/ResidentEvil.jpg",
+      "Image/LoL.jpg",
       "Image/TLOU.jpg",
-      "Image/clair-obscure.jpg"
+      "Image/HollowKnight.jpg",
+      "Image/Overwatch.jpg",
+      "Image/GTAV.jpg",
+      "Image/StardewValley.jpg",
+      "Image/FinalFantasy7.jpg"
     ];
 
     const coverImage = document.getElementById("cover-image");
     const nextButton = document.getElementById("next-cover");
 
     let currentIndex = 0;
-
-    function getNextCover() {
-      const cover = covers[currentIndex];
-      currentIndex = (currentIndex + 1) % covers.length;
-      return cover;
-    }
 
     function revealWithDepixel() {
       // Re-apply the pixelation before triggering the reveal
@@ -81,10 +75,19 @@
     }
 
     function showCover() {
-      const newCover = getNextCover();
+      if (currentIndex >= covers.length) return;
+      const newCover = covers[currentIndex];
       coverImage.classList.remove("depixel");
       coverImage.classList.add("pixel");
       coverImage.src = newCover;
+
+      currentIndex += 1;
+
+      if (currentIndex >= covers.length) {
+        nextButton.disabled = true;
+        nextButton.textContent = "Toutes les jaquettes";
+        nextButton.classList.add("primary-disabled");
+      }
     }
 
     coverImage.addEventListener("load", revealWithDepixel);

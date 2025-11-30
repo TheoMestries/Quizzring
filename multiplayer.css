@@ -82,6 +82,12 @@ main section {
   color: var(--muted);
 }
 
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

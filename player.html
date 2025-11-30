@@ -51,7 +51,8 @@
 
   <script src="multiplayer.js"></script>
   <script>
-    const DISCORD_CLIENT_ID = "VOTRE_CLIENT_ID_DISCORD";
+    const urlClientId = new URLSearchParams(window.location.search).get("client_id");
+    const DISCORD_CLIENT_ID = urlClientId || "VOTRE_CLIENT_ID_DISCORD";
     const DISCORD_SCOPES = ["identify"];
     const DISCORD_AUTHORIZE_URL = "https://discord.com/oauth2/authorize";
     const discordButton = document.getElementById("discord-login");
@@ -130,16 +131,18 @@
     }
 
     function setupDiscordButton() {
-      const clientConfigured = DISCORD_CLIENT_ID && !DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD");
-      if (!clientConfigured) {
-        discordButton.disabled = true;
-        discordHint.textContent = "Ajoute ton Client ID Discord dans player.html pour activer la connexion.";
-        return;
-      }
-
-      discordHint.textContent = "Redirection sécurisée vers Discord pour autoriser Quizzring.";
+      discordHint.textContent = "Tu seras redirigé sur Discord pour autoriser la connexion.";
       discordButton.addEventListener("click", () => {
-        window.location.href = buildAuthorizeUrl();
+        const authorizeUrl = buildAuthorizeUrl();
+
+        if (!DISCORD_CLIENT_ID || DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD")) {
+          alert(
+            "Configure le Client ID Discord dans le fichier ou passe-le dans l'URL (paramètre client_id) pour activer la redirection."
+          );
+          return;
+        }
+
+        window.location.href = authorizeUrl;
       });
     }
 

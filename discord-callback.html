@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion Discord...</title>
+</head>
+<body>
+<p>Connexion en cours...</p>
+<script>
+    (function () {
+        // Récupère les paramètres du hash (#access_token=...)
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const accessToken = params.get("access_token");
+        const tokenType = params.get("token_type");
+        const scope = params.get("scope") || "";
+
+        // Renvoie les infos à la fenêtre principale
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                {
+                    type: "discord-auth",
+                    accessToken,
+                    tokenType,
+                    scope,
+                },
+                window.location.origin // sécurité : même origine uniquement
+            );
+        }
+
+        // Ferme la popup
+        window.close();
+    })();
+</script>
+</body>
+</html>

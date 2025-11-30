@@ -53,7 +53,7 @@
   <script>
     // Renseigne ici l'identifiant client de ton application Discord (OAuth2 > Client ID).
     // Aucun paramètre d'URL n'est requis côté joueurs : le bouton redirige directement vers Discord.
-    const DISCORD_CLIENT_ID = "VOTRE_CLIENT_ID_DISCORD";
+    const DISCORD_CLIENT_ID = "1444784690954240063";
     const DISCORD_SCOPES = ["identify"];
     const DISCORD_AUTHORIZE_URL = "https://discord.com/oauth2/authorize";
     const discordButton = document.getElementById("discord-login");
@@ -63,20 +63,21 @@
     const gameStatus = document.getElementById("game-status");
     const gameName = document.getElementById("game-name");
     const playersList = document.getElementById("players");
+    const DISCORD_REDIRECT_URI = `${window.location.origin}/discord-callback.html`;
 
     function buildRedirectUri() {
       return `${window.location.origin}${window.location.pathname}`;
     }
 
     function buildAuthorizeUrl() {
-      const params = new URLSearchParams({
-        client_id: DISCORD_CLIENT_ID,
-        response_type: "token",
-        redirect_uri: buildRedirectUri(),
-        scope: DISCORD_SCOPES.join(" "),
-        prompt: "consent",
-      });
-      return `${DISCORD_AUTHORIZE_URL}?${params.toString()}`;
+        const params = new URLSearchParams({
+            client_id: DISCORD_CLIENT_ID,
+            response_type: "token", // flow implicite
+            redirect_uri: DISCORD_REDIRECT_URI,
+            scope: DISCORD_SCOPES.join(" "),
+            prompt: "consent",
+        });
+        return `${DISCORD_AUTHORIZE_URL}?${params.toString()}`;
     }
 
     function parseHashParams() {
@@ -132,21 +133,29 @@
     }
 
     function setupDiscordButton() {
-      const needsConfig = !DISCORD_CLIENT_ID || DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD");
+        const needsConfig = !DISCORD_CLIENT_ID || DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD");
 
-      if (needsConfig) {
-        discordButton.disabled = true;
-        discordButton.setAttribute("aria-disabled", "true");
-        discordHint.textContent =
-          "Configure le Client ID de ton application Discord dans le fichier pour activer la redirection.";
-        return;
-      }
+        if (needsConfig) {
+            discordButton.disabled = true;
+            discordButton.setAttribute("aria-disabled", "true");
+            discordHint.textContent =
+                "Configure le Client ID de ton application Discord dans le fichier pour activer la redirection.";
+            return;
+        }
 
-      discordHint.textContent = "Tu seras redirigé sur Discord pour autoriser la connexion.";
-      discordButton.addEventListener("click", () => {
-        const authorizeUrl = buildAuthorizeUrl();
-        window.location.href = authorizeUrl;
-      });
+        discordHint.textContent = "Une fenêtre Discord s’ouvrira pour autoriser la connexion.";
+        discordButton.addEventListener("click", () => {
+            const authorizeUrl = buildAuthorizeUrl();
+            const popup = window.open(
+                authorizeUrl,
+                "discord-login",
+                "width=500,height=700"
+            );
+
+            if (!popup) {
+                alert("Active les fenêtres pop-up pour te connecter avec Discord.");
+            }
+        });
     }
 
     function renderGame(game) {
@@ -208,6 +217,28 @@
       `;
     }
 
+    window.addEventListener("message", async (event) => {
+        // On ne fait confiance qu'aux messages venant du même domaine
+        if (event.origin !== window.location.origin) return;
+
+        const data = event.data;
+        if (!data || data.type !== "discord-auth") return;
+
+        const { accessToken, tokenType, scope } = data;
+        if (!accessToken || tokenType !== "Bearer" || !scope.includes("identify")) return;
+
+        try {
+            const profile = await fetchDiscordProfile(accessToken);
+            quizzringState.upsertPlayer({
+                name: profile.global_name || profile.username,
+                avatar: buildAvatarUrl(profile),
+            });
+            quizzringState.refreshPresence();
+        } catch (error) {
+            alert(error.message || "Connexion Discord échouée");
+        }
+    });
+
     quizzringState.subscribe((state) => {
       renderGame(state.game);
       renderPlayers(state.players, quizzringState.getCurrentPlayerId());
@@ -215,7 +246,7 @@
     });
 
     setupDiscordButton();
-    handleDiscordRedirect();
+    //handleDiscordRedirect();
 
     window.addEventListener("focus", () => quizzringState.refreshPresence());
     setInterval(() => quizzringState.refreshPresence(), 30000);

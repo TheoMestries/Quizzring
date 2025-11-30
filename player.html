@@ -51,8 +51,9 @@
 
   <script src="multiplayer.js"></script>
   <script>
-    const urlClientId = new URLSearchParams(window.location.search).get("client_id");
-    const DISCORD_CLIENT_ID = urlClientId || "VOTRE_CLIENT_ID_DISCORD";
+    // Renseigne ici l'identifiant client de ton application Discord (OAuth2 > Client ID).
+    // Aucun paramètre d'URL n'est requis côté joueurs : le bouton redirige directement vers Discord.
+    const DISCORD_CLIENT_ID = "VOTRE_CLIENT_ID_DISCORD";
     const DISCORD_SCOPES = ["identify"];
     const DISCORD_AUTHORIZE_URL = "https://discord.com/oauth2/authorize";
     const discordButton = document.getElementById("discord-login");
@@ -131,17 +132,19 @@
     }
 
     function setupDiscordButton() {
+      const needsConfig = !DISCORD_CLIENT_ID || DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD");
+
+      if (needsConfig) {
+        discordButton.disabled = true;
+        discordButton.setAttribute("aria-disabled", "true");
+        discordHint.textContent =
+          "Configure le Client ID de ton application Discord dans le fichier pour activer la redirection.";
+        return;
+      }
+
       discordHint.textContent = "Tu seras redirigé sur Discord pour autoriser la connexion.";
       discordButton.addEventListener("click", () => {
         const authorizeUrl = buildAuthorizeUrl();
-
-        if (!DISCORD_CLIENT_ID || DISCORD_CLIENT_ID.includes("VOTRE_CLIENT_ID_DISCORD")) {
-          alert(
-            "Configure le Client ID Discord dans le fichier ou passe-le dans l'URL (paramètre client_id) pour activer la redirection."
-          );
-          return;
-        }
-
         window.location.href = authorizeUrl;
       });
     }

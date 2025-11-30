@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quizzring | Salle d'attente</title>
+  <link rel="stylesheet" href="multiplayer.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Joueurs</p>
+        <h1>Salle d'attente Discord</h1>
+        <p class="subtitle">Connecte-toi avec ton pseudo Discord, garde l'onglet ouvert et attends le lancement de l'admin.</p>
+      </div>
+      <a class="btn-ghost" href="index.html">← Retour</a>
+    </header>
+
+    <section class="grid" aria-label="Connexion joueur">
+      <div>
+        <p class="eyebrow">Profil</p>
+        <h2 class="card-title">Connexion Discord</h2>
+        <p class="lead">Saisis ton pseudo et, si tu veux, l'URL de ton avatar. L'identifiant est enregistré localement.</p>
+        <form id="login-form" class="stack">
+          <div class="form-group">
+            <label for="name">Pseudo Discord</label>
+            <input id="name" name="name" placeholder="Ex: Player#0001" required>
+          </div>
+          <div class="form-group">
+            <label for="avatar">URL avatar (optionnel)</label>
+            <input id="avatar" name="avatar" placeholder="https://...">
+          </div>
+          <button type="submit" class="btn-primary">Rejoindre la partie</button>
+        </form>
+      </div>
+
+      <div class="stack" aria-live="polite">
+        <p class="eyebrow">Statut perso</p>
+        <h2 class="card-title">Ton statut</h2>
+        <div id="player-card" class="player-row" style="display:none"></div>
+        <p id="player-hint" class="lead">Rejoins pour apparaître dans la liste des joueurs.</p>
+        <div class="stack">
+          <p class="eyebrow">Partie</p>
+          <div id="game-status" class="badge waiting">En attente</div>
+          <p id="game-name" class="lead">Aucune partie lancée</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Joueurs connectés">
+      <p class="eyebrow">Participants</p>
+      <h2 class="card-title">Joueurs en ligne</h2>
+      <p class="lead">La liste est partagée via le navigateur. Ouvre cette page dans plusieurs onglets pour tester.</p>
+      <div id="players" class="players" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="multiplayer.js"></script>
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const nameInput = document.getElementById("name");
+    const avatarInput = document.getElementById("avatar");
+    const playerCard = document.getElementById("player-card");
+    const playerHint = document.getElementById("player-hint");
+    const gameStatus = document.getElementById("game-status");
+    const gameName = document.getElementById("game-name");
+    const playersList = document.getElementById("players");
+
+    function renderGame(game) {
+      if (game.status === "running") {
+        gameStatus.textContent = "La partie est en cours";
+        gameStatus.className = "badge running";
+        gameName.textContent = game.name || "Partie surprise";
+      } else {
+        gameStatus.textContent = "En attente";
+        gameStatus.className = "badge waiting";
+        gameName.textContent = "Aucune partie lancée";
+      }
+    }
+
+    function renderPlayers(players, currentId) {
+      playersList.innerHTML = "";
+      if (!players.length) {
+        playersList.innerHTML = "<p class=\"lead\">Aucun joueur pour l'instant.</p>";
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      players
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((player) => {
+          const row = document.createElement("div");
+          row.className = "player-row";
+          const isCurrent = player.id === currentId;
+          row.innerHTML = `
+            <img class="avatar" src="${player.avatar}" alt="Avatar ${player.name}">
+            <div class="stack">
+              <p class="player-name">${player.name}${isCurrent ? " (toi)" : ""}</p>
+              <p class="player-meta">${player.status === "in-game" ? "En jeu" : "En attente"} · ${quizzringState.formatSince(player.lastSeen)}</p>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+      playersList.appendChild(fragment);
+    }
+
+    function renderCurrentPlayer(state) {
+      const currentId = quizzringState.getCurrentPlayerId();
+      const current = currentId ? state.players.find((p) => p.id === currentId) : null;
+
+      if (!current) {
+        playerCard.style.display = "none";
+        playerHint.style.display = "block";
+        return;
+      }
+
+      playerCard.style.display = "flex";
+      playerHint.style.display = "none";
+      playerCard.innerHTML = `
+        <img class="avatar" src="${current.avatar}" alt="Avatar ${current.name}">
+        <div class="stack">
+          <p class="player-name">${current.name}</p>
+          <p class="player-meta">${current.status === "in-game" ? "En jeu" : "En attente"}</p>
+        </div>
+      `;
+    }
+
+    quizzringState.subscribe((state) => {
+      renderGame(state.game);
+      renderPlayers(state.players, quizzringState.getCurrentPlayerId());
+      renderCurrentPlayer(state);
+    });
+
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      try {
+        quizzringState.upsertPlayer({
+          name: nameInput.value,
+          avatar: avatarInput.value,
+        });
+        quizzringState.refreshPresence();
+        loginForm.reset();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    window.addEventListener("focus", () => quizzringState.refreshPresence());
+    setInterval(() => quizzringState.refreshPresence(), 30000);
+  </script>
+</body>
+</html>

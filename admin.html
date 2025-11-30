@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quizzring | Admin multijoueur</title>
+  <link rel="stylesheet" href="multiplayer.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Contrôle hôte</p>
+        <h1>Interface admin</h1>
+        <p class="subtitle">Lance une partie et surveille en direct les joueurs connectés depuis Discord.</p>
+      </div>
+      <a class="btn-ghost" href="index.html">← Retour</a>
+    </header>
+
+    <section class="grid" aria-label="État général">
+      <div>
+        <p class="eyebrow">Statut</p>
+        <h2 class="card-title">Partie en cours</h2>
+        <p class="lead" id="game-name">Aucune partie lancée</p>
+        <div id="game-badge" class="badge idle">En attente</div>
+      </div>
+
+      <div class="stack">
+        <p class="eyebrow">Démarrer</p>
+        <div class="form-group">
+          <label for="game-select">Choisis l'épreuve</label>
+          <select id="game-select">
+            <option>Jaquettes pixelisées</option>
+            <option>Quiz express</option>
+            <option>Blind test</option>
+            <option>Défi surprise</option>
+          </select>
+        </div>
+        <div class="split">
+          <button id="start-game" class="btn-primary">Lancer la partie</button>
+          <button id="reset-game" class="btn-ghost">Réinitialiser</button>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Joueurs" id="players-section">
+      <div class="header" style="padding:0">
+        <div>
+          <p class="eyebrow">Salle d'attente</p>
+          <h2 class="card-title" id="player-count">0 joueurs connectés</h2>
+        </div>
+        <button id="cleanup" class="btn-ghost">Nettoyer les absents</button>
+      </div>
+      <div id="players" class="players" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="multiplayer.js"></script>
+  <script>
+    const gameName = document.getElementById("game-name");
+    const gameBadge = document.getElementById("game-badge");
+    const playerCount = document.getElementById("player-count");
+    const playersList = document.getElementById("players");
+    const startBtn = document.getElementById("start-game");
+    const resetBtn = document.getElementById("reset-game");
+    const cleanupBtn = document.getElementById("cleanup");
+
+    function renderGame(game) {
+      if (game.status === "running") {
+        gameName.textContent = game.name || "Partie surprise";
+        gameBadge.textContent = "En cours";
+        gameBadge.className = "badge running";
+      } else {
+        gameName.textContent = "Aucune partie lancée";
+        gameBadge.textContent = "En attente";
+        gameBadge.className = "badge waiting";
+      }
+    }
+
+    function renderPlayers(players, gameStatus) {
+      playerCount.textContent = `${players.length} joueur${players.length > 1 ? "s" : ""} connectés`;
+      playersList.innerHTML = "";
+      if (!players.length) {
+        playersList.innerHTML = "<p class=\"lead\">Personne pour l'instant. Demande aux joueurs d'ouvrir la page d'attente.</p>";
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      players
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((player) => {
+          const row = document.createElement("div");
+          row.className = "player-row";
+          row.innerHTML = `
+            <img class="avatar" src="${player.avatar}" alt="Avatar ${player.name}">
+            <div class="stack">
+              <p class="player-name">${player.name}</p>
+              <p class="player-meta">${gameStatus === "running" ? "En jeu" : "En attente"} · ${quizzringState.formatSince(player.lastSeen)}</p>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+      playersList.appendChild(fragment);
+    }
+
+    quizzringState.subscribe((state) => {
+      renderGame(state.game);
+      renderPlayers(state.players, state.game.status);
+    });
+
+    startBtn.addEventListener("click", () => {
+      const name = document.getElementById("game-select").value;
+      quizzringState.startGame(name);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      quizzringState.resetGame();
+    });
+
+    cleanupBtn.addEventListener("click", () => {
+      quizzringState.removeInactive();
+    });
+  </script>
+</body>
+</html>
